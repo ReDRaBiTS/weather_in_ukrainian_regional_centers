@@ -8,6 +8,7 @@ api_key = API_KEY
 
 
 # Запит на сайт openweathermap.org
+# Request to openweathermap.org for today's weather
 def weather_request(city):
     today_weather_req = requests.get(f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric")
     return today_weather_req
@@ -15,20 +16,35 @@ def weather_request(city):
 
 
 # Виводимо результат на екран
+# Display the result on the screen
 def print_weather_on_screen(json_text):
-    print(f'Назва міста англійською:    {json_text["name"]}\n\
-          Температура повітря: {json_text["main"]["temp"]} C°  {translate_weather(json_text["weather"][0]["main"])}\n\
-          Відчувається як:     {json_text["main"]["feels_like"]} C°\n\n\
-          Схід сонця:          {datetime.datetime.fromtimestamp(json_text["sys"]["sunrise"]).strftime("%H:%M")}\n\
-          Захід сонця:         {datetime.datetime.fromtimestamp(json_text["sys"]["sunset"]).strftime("%H:%M")}\n\n\
-          Повітряний тиск:     {json_text["main"]["pressure"]} мм.рт.ст\n\n\
-          Напрямок вітру:      {convert_to_wind_direction(json_text["wind"]["deg"])}\n\
-          Швідкість вітру:     {json_text["wind"]["speed"]} м\с')
+    titels = [
+    "Температура повітря:",
+    "Відчувається як:",    
+    "Схід сонця:",   
+    "Захід сонця:",  
+    "Повітряний тиск:",
+    "Напрямок вітру:" ,
+    "Швідкість вітру:"]
 
-
+    result = [
+    f"{json_text['main']['temp']} C°  {translate_weather(json_text['weather'][0]['main'])}\n",
+    f"{json_text['main']['feels_like']} C°\n",
+    f"{datetime.datetime.fromtimestamp(json_text['sys']['sunrise']).strftime('%H:%M')}\n",
+    f"{datetime.datetime.fromtimestamp(json_text['sys']['sunset']).strftime('%H:%M')}\n",
+    f"{round(json_text['main']['pressure'] * 0.7500637555419211, 2)} мм.рт.ст\n",
+    f"{convert_to_wind_direction(json_text['wind']['deg'])}\n",
+    f"{json_text['wind']['speed']} м\\с"
+    ]
+     
+    return dict(zip(titels, result))
+           
+    
 # Конвертуємо напрям вітру
+# Convert the wind direction
 def convert_to_wind_direction(degrees):
     # Список вітрохідних напрямків та їх відповідних діапазонів градусів
+    # List of wind directions and their respective degree ranges
     wind_directions = {
         'Північний': (348.75, 11.25),
         'Північно-східний': (11.25, 78.75),
@@ -41,17 +57,20 @@ def convert_to_wind_direction(degrees):
     }
 
     # Перевірка, щоб кут був у діапазоні [0, 360)
+    # Checking that the angle is in the range [0, 360)
     degrees = degrees % 360
 
     # Пошук відповідного напрямку
+    # Finding the right direction
     for direction, (start, end) in wind_directions.items():
         if start <= degrees < end:
             return direction
 
-    # Якщо не вдалося знайти відповідний напрямок
+    
     return 'Помилка'
 
 # Перекладаємо погоду з англійської
+# Translate weather from English
 def translate_weather(weather):
     weather_dict = {
         'Thunderstorm': 'Гроза',
@@ -70,6 +89,8 @@ def translate_weather(weather):
         'Clear': 'Ясне небо',
         'Clouds': 'Хмарно'
     }
+    
+    
     for eng, ukr in weather_dict.items():
         if eng == weather:
             return ukr
@@ -77,6 +98,7 @@ def translate_weather(weather):
     return 'Помилка'
 
 #Перевіряємо правільність вводу індекса
+#Check if the index is entered correctly
 def check_index(len_dict:int):
     try:
         index = int(input('Введіть номер міста: '))
@@ -132,12 +154,13 @@ def main():
     selected_index = screen_list[check_index(len(screen_list))]
   
     selected_city = cities_dict[selected_index]
-
-    print(f'Ви вибрали місто:  {selected_index}')
+    text = 'Ви вибрали місто'
+    print (f"{text.ljust(20)}   {selected_index}\n")
 
     today_weather_req = weather_request(selected_city)
     json_text = today_weather_req.json()
-    print_weather_on_screen(json_text)
+    for k,v in print_weather_on_screen(json_text).items():
+        print (f"{k.ljust(20)}   {v}")
 
 if __name__ == '__main__':
     main()
