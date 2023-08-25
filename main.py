@@ -1,6 +1,5 @@
 import requests
 import datetime
-from pprint import pprint
 from key import API_KEY
 
 api_key = API_KEY
